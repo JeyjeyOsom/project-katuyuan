@@ -1,0 +1,23 @@
+{
+  "name": "web",
+  "version": "0.0.0",
+  "private": true,
+  "devDependencies": {
+    "@repo/ts-config": "workspace:*",
+    "@types/node": "^25.0.10"
+  },
+  "dependencies": {
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "@tanstack/react-query": "^5.90.20",
+    "lucide-react": "^0.563.0",
+    "viem": "2",
+    "wagmi": "^2.19.5"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  }
+}
