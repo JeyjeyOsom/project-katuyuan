@@ -1,13 +1,12 @@
-import { createPublicClient, http } from 'viem'
-import { mainnet, sepolia } from 'viem/chains'
-import dotenv from 'dotenv'
+import { createPublicClient, http } from 'viem';
+import { hardhat } from 'viem/chains';
 
-dotenv.config()
+// This URL changes depending on if you are inside Docker or running locally
+// Local: http://127.0.0.1:8545
+// Docker: http://hardhat:8545 (using the service name)
+const RPC_URL = process.env.RPC_URL || 'http://127.0.0.1:8545';
 
-export const PORT = process.env.PORT || 3001
-
-// Initialize Viem Client (The connection to Ethereum)
 export const publicClient = createPublicClient({
-  chain: sepolia, // Using Sepolia testnet
-  transport: http(process.env.RPC_URL || 'https://rpc.sepolia.org') 
-})
+  chain: hardhat,
+  transport: http(RPC_URL),
+});
