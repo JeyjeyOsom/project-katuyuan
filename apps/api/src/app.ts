@@ -1,9 +1,9 @@
 import express from 'express'
 import cors from 'cors'
 import { getAccountInfo } from './controllers/account.controller.js'
-import { PORT } from './config.js'
+// import { PORT } from './config.js'
 import { BlockchainService } from './services/blockchain.service.js'
-
+import { publicClient } from './config.js';
 const app = express()
 
 // Middleware
@@ -14,8 +14,8 @@ app.use(express.json())
 app.get('/api/account/:address', getAccountInfo)
 
 // Start Server
-app.listen(PORT, () => {
-  console.log(`🚀 API Server running on http://localhost:${PORT}`)
+app.listen(3001, () => {
+  console.log(`🚀 API Server running on http://localhost:3001`)
 })
 
 app.get('/api/token/:address', async (req, res) => {
@@ -25,5 +25,18 @@ app.get('/api/token/:address', async (req, res) => {
     res.json({ success: true, data });
   } catch (error: any) {
     res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+app.get('/api/chain-health', async (req, res) => {
+  try {
+    const blockNumber = await publicClient.getBlockNumber();
+    res.json({ 
+      status: 'Connected', 
+      blockNumber: blockNumber.toString(),
+      network: 'Hardhat'
+    });
+  } catch (error: any) {
+    res.status(500).json({ status: 'Disconnected', error: error.message });
   }
 });

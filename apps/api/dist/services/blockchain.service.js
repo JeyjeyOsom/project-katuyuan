@@ -5,24 +5,17 @@ const cache = {
     data: {},
     expiry: {}
 };
-// Add the contract ABI (just the balance function)
-const TOKEN_ABI = [
+// 1. Updated ABI to match a Counter contract
+const COUNTER_ABI = [
     {
-        name: 'balanceOf',
-        type: 'function',
-        stateMutability: 'view',
-        inputs: [{ name: 'account', type: 'address' }],
-        outputs: [{ name: 'balance', type: 'uint256' }],
-    },
-    {
-        name: 'symbol',
+        name: 'number', // Change this to 'getCount' if that's what's in your .sol
         type: 'function',
         stateMutability: 'view',
         inputs: [],
-        outputs: [{ name: '', type: 'string' }],
+        outputs: [{ name: '', type: 'uint256' }],
     }
 ];
-const CONTRACT_ADDRESS = '0x325f5662ef6bc49ba9726d1318a8aad8d093a310'; // Paste from Tier 3
+const CONTRACT_ADDRESS = '0x5fbdb2315678afecb367f032d93f642f64180aa3'; // Paste from Tier 3
 export class BlockchainService {
     // Helper to get/set cache
     getCache(key) {
@@ -34,6 +27,27 @@ export class BlockchainService {
     setCache(key, data, ttlSeconds) {
         cache.data[key] = data;
         cache.expiry[key] = Date.now() + (ttlSeconds * 1000);
+    }
+    // 2. Fetch the actual Counter value
+    async getCounterValue() {
+        const cacheKey = 'counter_value';
+        const cached = this.getCache(cacheKey);
+        if (cached)
+            return cached;
+        try {
+            const count = await publicClient.readContract({
+                address: CONTRACT_ADDRESS,
+                abi: COUNTER_ABI,
+                functionName: 'number', // Matches the ABI above
+            });
+            const result = { count: count.toString() };
+            this.setCache(cacheKey, result, 5); // Cache for 5s (counters change fast!)
+            return result;
+        }
+        catch (error) {
+            console.error("Failed to read contract:", error);
+            throw new Error("Contract read failed");
+        }
     }
     // 1. Get General Network Stats (Cached for 15 seconds)
     async getNetworkStats() {
@@ -57,15 +71,14 @@ export class BlockchainService {
         const [balance, symbol] = await Promise.all([
             publicClient.readContract({
                 address: CONTRACT_ADDRESS,
-                abi: TOKEN_ABI,
-                functionName: 'balanceOf',
-                args: [address],
+                abi: COUNTER_ABI,
+                functionName: 'number',
                 authorizationList: undefined
             }),
             publicClient.readContract({
                 address: CONTRACT_ADDRESS,
-                abi: TOKEN_ABI,
-                functionName: 'symbol',
+                abi: COUNTER_ABI,
+                functionName: 'number',
                 authorizationList: undefined
             })
         ]);
